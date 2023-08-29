@@ -1,47 +1,33 @@
 // Your code here.
-  const items = document.querySelectorAll('.item');
-    let activeItem = null;
 
-    items.forEach(item => {
-      item.addEventListener('mousedown', (e) => {
-        activeItem = item;
-        activeItem.style.zIndex = 1;
+    const items = document.querySelector('.items');
+    let isDragging = false;
+    let startX = 0;
+    let scrollLeft = 0;
 
-        const offsetX = e.clientX - activeItem.getBoundingClientRect().left;
-        const offsetY = e.clientY - activeItem.getBoundingClientRect().top;
+    items.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.pageX - items.offsetLeft;
+      scrollLeft = items.scrollLeft;
 
-        const onMouseMove = (event) => {
-          if (activeItem) {
-            const x = event.clientX - offsetX;
-            const y = event.clientY - offsetY;
-            activeItem.style.transform = `translate(${x}px, ${y}px)`;
-          }
-        };
-
-        const onMouseUp = () => {
-          if (activeItem) {
-            activeItem.style.zIndex = 0;
-            activeItem = null;
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup', onMouseUp);
-          }
-        };
-
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-      });
+      items.style.cursor = 'grabbing';
     });
-it('should trigger click and drag', () => {
-  cy.get('.items').trigger('mousedown', { which: 1, pageX: 493, pageY: 391 })
-    .trigger('mousemove', { which: 1, pageX: 271, pageY: 391 })
-    .trigger('mouseup');
 
-  // Wait for a short duration to ensure DOM updates
-  cy.wait(1000);
+    items.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
 
-  // Perform the assertion after the wait
-  cy.get('.items').should($items => {
-    expect($items[0].scrollLeft).to.be.greaterThan(0);
-  });
-});
+      const x = e.pageX - items.offsetLeft;
+      const walk = (x - startX) * 3; // Adjust the sliding speed
+      items.scrollLeft = scrollLeft - walk;
+    });
 
+    items.addEventListener('mouseup', () => {
+      isDragging = false;
+      items.style.cursor = 'grab';
+    });
+
+    items.addEventListener('mouseleave', () => {
+      isDragging = false;
+      items.style.cursor = 'grab';
+    });
