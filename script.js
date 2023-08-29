@@ -31,3 +31,17 @@
         window.addEventListener('mouseup', onMouseUp);
       });
     });
+it('should trigger click and drag', () => {
+  cy.get('.items').trigger('mousedown', { which: 1, pageX: 493, pageY: 391 })
+    .trigger('mousemove', { which: 1, pageX: 271, pageY: 391 })
+    .trigger('mouseup');
+
+  // Wait for a short duration to ensure DOM updates
+  cy.wait(1000);
+
+  // Perform the assertion after the wait
+  cy.get('.items').should($items => {
+    expect($items[0].scrollLeft).to.be.greaterThan(0);
+  });
+});
+
